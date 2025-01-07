@@ -14,7 +14,7 @@ BASKET_WIDTH = 80
 BASKET_HEIGHT = 20
 basket_x = WINDOW_WIDTH // 2 - BASKET_WIDTH // 2
 basket_y = 50  # Fixed y-position for the basket
-basket_speed = 20
+basket_speed = 30
 
 # Background color
 background_color = [0.0, 0.0, 0.0, 1.0]  # Default: black (night mode)
@@ -24,6 +24,8 @@ shapes = []
 shape_types = ["triangle", "circle", "square"]
 shape_fall_speed = 4
 new_shape_interval = 50  # interval between new shapes
+speed_increment = 1.5  # Factor to increase speed in each round
+
 
 # Game state
 score = 0
@@ -236,7 +238,6 @@ def draw_next_round_arrow_circle():
     glVertex2f(arrow_bottom_x, arrow_bottom_y)  # Bottom of the arrowhead
     glEnd()
 
-
 def midpoint_circle(xc, yc, r):
     x, y = 0, r
     d = 1 - r
@@ -286,63 +287,78 @@ def restart_game():
     level_complete_flag = False
 
 
-def advance_round():
-    global score, round_target, current_target_shape, missed_target_count, wrong_shape_count, level_complete_flag
-    shapes.clear()
-    score = 0
-    round_target = random.randint(1, 10)
-    current_target_shape = random.choice(shape_types)
-    missed_target_count = 0
-    wrong_shape_count = 0
-    level_complete_flag = False
+MAX_FALL_SPEED = 20  # Maximum speed limit
+speed_increment = 1.4  # Speed multiplier for each round
 
+def advance_round():
+    global shapes, score, round_target, current_target_shape
+    global missed_target_count, wrong_shape_count, level_complete_flag, shape_fall_speed
+    shapes.clear()  # Clear all falling shapes
+    score = 0  # Reset score
+    round_target = random.randint(1, 10)  # Generate a new target
+    current_target_shape = random.choice(shape_types)  #  a new target shape
+    missed_target_count = 0  
+    wrong_shape_count = 0  
+    level_complete_flag = False 
+    shape_fall_speed = min(shape_fall_speed * speed_increment, MAX_FALL_SPEED)  # Increment and cap speed
+    print(f"Advancing to next round. New speed: {shape_fall_speed:.1f}")  
 def display():
-    glClear(GL_COLOR_BUFFER_BIT)
+    glClear(GL_COLOR_BUFFER_BIT)  # Clearing the screen
 
     if game_over_flag:
-        glColor3f(0.3, 0.5, 0.8)
+        glColor3f(0.3, 0.5, 0.8)  
         glRasterPos2f(WINDOW_WIDTH // 2 - 50, WINDOW_HEIGHT // 2 + 70)
         for char in "You've failed... Try again":
             glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(char))
-        draw_arrow_circle(forward=False)
+        draw_arrow_circle(forward=False)  # Draw restart arrow
 
     elif level_complete_flag:
-        glColor3f(0.3, 0.5, 0.8)  # text color
-
-        
+        glColor3f(0.3, 0.5, 0.8)  # Text color for level complete
         glRasterPos2f(WINDOW_WIDTH // 2 - 180, WINDOW_HEIGHT // 2 + 100)
         for char in "You've successfully completed the task.":
             glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(char))
 
-       
         glRasterPos2f(WINDOW_WIDTH // 2 - 40, WINDOW_HEIGHT // 2 + 80)
         for char in "Next Round":
             glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(char))
 
-        # Draw the symbol (right-sided arrow in green circle)
+        # Draw the next round arrow
         draw_next_round_arrow_circle()
+
     else:
-        draw_human(basket_x + BASKET_WIDTH // 2, basket_y)  #human drawing
-        draw_shapes()
+        draw_human(basket_x + BASKET_WIDTH // 2, basket_y)  # Draw human
+        draw_shapes()  # Draw falling shapes
+
+        # Display score and target
         glColor3f(0.4, 0.3, 0.8)
         glRasterPos2f(10, WINDOW_HEIGHT - 20)
         for char in f"Score: {score} Target: {round_target} {current_target_shape}s":
             glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(char))
+        
+        # Display missed and wrong counts
         glRasterPos2f(10, WINDOW_HEIGHT - 40)
         for char in f"Missed: {missed_target_count}/{MAX_MISSES} Wrong: {wrong_shape_count}/{MAX_WRONGS}":
             glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(char))
+        
+        # Display current fall speed
+        glRasterPos2f(10, WINDOW_HEIGHT - 60)
+        for char in f"Speed: {shape_fall_speed:.1f}":
+            glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(char))
 
-    glutSwapBuffers()
-
+    glutSwapBuffers()  # Swap buffers to display the rendered frame
 
 def mouse_motion(button, state, x, y):
     global level_complete_flag, game_over_flag
 
     if button == GLUT_LEFT_BUTTON and state == GLUT_DOWN:
-        mx, my = x, WINDOW_HEIGHT - y
+        mx, my = x, WINDOW_HEIGHT - y  # Convert screen to OpenGL coordinates
+        print(f"Mouse Click at: ({mx}, {my})")  # Debugging
+
         if game_over_flag and is_mouse_in_circle(mx, my, *circle_center, circle_radius):
+            print("Restarting game...")
             restart_game()
         elif level_complete_flag and is_mouse_in_circle(mx, my, *circle_center, circle_radius):
+            print("Advancing to the next round...")
             advance_round()
 
 
@@ -391,3 +407,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
