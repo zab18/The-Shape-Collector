@@ -236,28 +236,6 @@ def draw_next_round_arrow_circle():
     glVertex2f(arrow_bottom_x, arrow_bottom_y)  # Bottom of the arrowhead
     glEnd()
 
-def line_draw_algo(x1, y1, x2, y2):
-    """Draws a line using the Midpoint Line Algorithm."""
-    glBegin(GL_POINTS)  # Start OpenGL drawing here
-    dx = abs(x2 - x1)
-    dy = abs(y2 - y1)
-    sx = 1 if x1 < x2 else -1
-    sy = 1 if y1 < y2 else -1
-    err = dx - dy
-
-    while True:
-        glVertex2f(x1, y1)
-        if x1 == x2 and y1 == y2:
-            break
-        e2 = 2 * err
-        if e2 > -dy:
-            err -= dy
-            x1 += sx
-        if e2 < dx:
-            err += dx
-            y1 += sy
-    glEnd()  # Ensure OpenGL drawing ends here
-
 
 def midpoint_circle(xc, yc, r):
     x, y = 0, r
