@@ -86,7 +86,7 @@ def is_caught(shape):
 
 
 def draw_human(x, y):
-    """Draws a simple human shape at the given position."""
+
     # Head (circle)
     glColor3f(1.0, 0.8, 0.6)  # Skin tone
     glBegin(GL_POLYGON)
@@ -164,7 +164,7 @@ def draw_square(x, y):
     glEnd()
 
 def draw_arrow_circle(forward=True): 
-    """Draws a circular arrow with a proper arrowhead."""
+    
     xc, yc = circle_center
     r = circle_radius * 1.8  
 
@@ -206,7 +206,7 @@ def draw_arrow_circle(forward=True):
 
 
 def draw_next_round_arrow_circle():
-    """Draws a green circle with a right-sided arrow inside."""
+
     xc, yc = circle_center
     r = circle_radius
 
